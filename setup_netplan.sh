@@ -3,7 +3,8 @@
 # Define variables
 NETPLAN_DIR="/etc/netplan"
 NEW_CONFIG_FILE="$NETPLAN_DIR/01-netcfg.yaml"
-INTERFACE="enp3s0"
+BRIDGE_INTERFACE="br0"
+PHYSICAL_INTERFACE="enp3s0"
 STATIC_IP="192.168.0.129/24"
 GATEWAY="192.168.0.1"
 DNS_PRIMARY="8.8.8.8"   # Primary DNS (Google Public DNS)
@@ -18,16 +19,21 @@ cp $NETPLAN_DIR/*.yaml "$NETPLAN_DIR/backup/" 2>/dev/null
 echo "Removing old Netplan configuration files..."
 rm -f $NETPLAN_DIR/*.yaml
 
-# Create a new Netplan configuration file
-echo "Creating a new Netplan configuration file..."
+# Create a new Netplan configuration file with bridge setup
+echo "Creating a new Netplan configuration file with bridge mode..."
 cat <<EOL > $NEW_CONFIG_FILE
 network:
   version: 2
   renderer: NetworkManager
   ethernets:
-    $INTERFACE:
+    $PHYSICAL_INTERFACE:
       dhcp4: false
       dhcp6: false
+  bridges:
+    $BRIDGE_INTERFACE:
+      interfaces:
+        - $PHYSICAL_INTERFACE
+      dhcp4: false
       addresses:
         - $STATIC_IP
       routes:
